@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Beispiel Rätsel</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: linear-gradient(to bottom, #a2d5f2, #07689f);
+      color: #fff;
+      text-align: center;
+      padding-top: 40px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bubble {
+      position: absolute;
+      bottom: -100px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      animation: rise 10s infinite ease-in;
+    }
+
+    @keyframes rise {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-1200px) scale(1.5); opacity: 0; }
+    }
+
+    h1 {
+      margin-bottom: 5px;
+    }
+
+    .subtext {
+      font-size: 1.1em;
+      margin-bottom: 20px;
+    }
+
+    .keyboard {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .key {
+      width: 70px;
+      height: 70px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border: 2px solid #444;
+      border-radius: 10px;
+      font-size: 24px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+      transition: transform 0.1s;
+      color: #07689f;
+    }
+
+    .key:active {
+      background-color: #ffe699;
+      transform: scale(0.95);
+    }
+
+    #note {
+      font-size: 1.2em;
+      color: #fff;
+      margin-top: 20px;
+    }
+
+    #victory {
+      font-size: 1.5em;
+      color: #00ffcc;
+      margin-top: 30px;
+      font-weight: bold;
+    }
+
+    #solutionDisplay {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 30px 0;
+      font-size: 28px;
+    }
+
+    .letter-box {
+      width: 30px;
+      border-bottom: 3px solid white;
+      min-height: 40px;
+    }
+
+    .correct {
+      color: lime;
+      border-color: lime;
+    }
+
+    .wrong {
+      color: red;
+      border-color: red;
+    }
+
+    #resetBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #07689f;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    #resetBtn:hover {
+      background-color: #ddeeff;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🧩 Beispiel Rätsel</h1>
+  <div class="subtext">1 von 24 Rätseln</div>
+  <p>Klicke oder tippe: Finde das Lösungswort!</p>
+
+  <div id="solutionDisplay"></div>
+  <div class="keyboard" id="keyboard"></div>
+  <button id="resetBtn">🔙 Letzten Buchstaben löschen</button>
+
+  <div id="note">–</div>
+  <div id="victory"></div>
+
+  <!-- Blasen generieren -->
+  <script>
+    for (let i = 0; i < 12; i++) {
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.style.left = Math.random() * 100 + 'vw';
+      const size = (10 + Math.random() * 30);
+      bubble.style.width = bubble.style.height = size + 'px';
+      bubble.style.animationDuration = (8 + Math.random() * 4) + 's';
+      document.body.appendChild(bubble);
+    }
+  </script>
+
+  <script>
+    const originalLetters = ['D', 'E', 'R', 'S', 'H', 'O', 'W', 'M', 'A', 'T'];
+    const letters = [...originalLetters].sort(() => Math.random() - 0.5);
+    const solution = "DERSHOWMASTER".split("");
+    let currentInput = [];
+
+    const soundMap = {
+      D: "https://www2.cs.uic.edu/~i101/SoundFiles/StarWars3.wav",
+      E: "https://www2.cs.uic.edu/~i101/SoundFiles/Elephant.wav",
+      R: "https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand60.wav",
+      S: "https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav",
+      H: "https://www2.cs.uic.edu/~i101/SoundFiles/ImperialMarch60.wav",
+      O: "https://www2.cs.uic.edu/~i101/SoundFiles/taunt.wav",
+      W: "https://www2.cs.uic.edu/~i101/SoundFiles/BlueDanube60.wav",
+      M: "https://www2.cs.uic.edu/~i101/SoundFiles/Fanfare60.wav",
+      A: "https://www2.cs.uic.edu/~i101/SoundFiles/RedAlert.wav",
+      T: "https://www2.cs.uic.edu/~i101/SoundFiles/Buzzer.wav"
+    };
+
+    const sounds = {};
+    originalLetters.forEach(l => {
+      sounds[l] = new Audio(soundMap[l]);
+    });
+
+    function playSound(letter) {
+      const audio = sounds[letter];
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play();
+        document.getElementById('note').textContent = `Ton: ${letter}`;
+      }
+
+      if (currentInput.length < solution.length) {
+        currentInput.push(letter);
+        updateSolutionDisplay();
+
+        if (currentInput.length === solution.length) {
+          checkVictory();
+        }
+      }
+    }
+
+    function updateSolutionDisplay() {
+      const container = document.getElementById("solutionDisplay");
+      container.innerHTML = "";
+
+      for (let i = 0; i < solution.length; i++) {
+        const span = document.createElement("span");
+        span.className = "letter-box";
+
+        if (currentInput[i]) {
+          span.textContent = currentInput[i];
+
+          if (currentInput[i] === solution[i]) {
+            span.classList.add("correct");
+          } else {
+            span.classList.add("wrong");
+          }
+        } else {
+          span.textContent = "";
+        }
+
+        container.appendChild(span);
+      }
+    }
+
+    function checkVictory() {
+      const userWord = currentInput.join("");
+      if (userWord === solution.join("")) {
+        const coord = getRandomCoordinateNumber();
+        document.getElementById("victory").textContent =
+          `🎉 Victory! Gehe zu Koordinate: ${coord}`;
+      } else {
+        document.getElementById("victory").textContent = "❌ Falsch! Du kannst Buchstaben löschen.";
+      }
+    }
+
+    function getRandomCoordinateNumber() {
+      return Math.floor(Math.random() * 100) + 1; // z. B. 1–100
+    }
+
+    function deleteLastLetter() {
+      if (currentInput.length > 0) {
+        currentInput.pop();
+        updateSolutionDisplay();
+        document.getElementById("victory").textContent = "";
+      }
+    }
+
+    const kb = document.getElementById('keyboard');
+    letters.forEach(letter => {
+      const key = document.createElement('div');
+      key.className = 'key';
+      key.textContent = letter;
+      key.addEventListener('click', () => playSound(letter));
+      kb.appendChild(key);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      const k = e.key.toUpperCase();
+      if (originalLetters.includes(k)) {
+        playSound(k);
+      } else if (e.key === "Backspace") {
+        deleteLastLetter();
+      }
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", deleteLastLetter);
+
+    updateSolutionDisplay();
+  </script>
+
+</body>
+</html>
