@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Beispiel Rätsel</title>
   <style>
     body {
@@ -12,6 +13,7 @@
       padding-top: 40px;
       overflow: hidden;
       position: relative;
+      margin: 0;
     }
 
     .bubble {
@@ -29,10 +31,11 @@
 
     h1 {
       margin-bottom: 5px;
+      font-size: 1.8em;
     }
 
     .subtext {
-      font-size: 1.1em;
+      font-size: 1em;
       margin-bottom: 20px;
     }
 
@@ -40,17 +43,18 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 12px;
+      gap: 10px;
       margin-bottom: 20px;
+      padding: 0 10px;
     }
 
     .key {
-      width: 70px;
-      height: 70px;
+      width: 60px;
+      height: 60px;
       background-color: rgba(255, 255, 255, 0.8);
       border: 2px solid #444;
       border-radius: 10px;
-      font-size: 24px;
+      font-size: 22px;
       font-weight: bold;
       display: flex;
       align-items: center;
@@ -68,13 +72,13 @@
     }
 
     #note {
-      font-size: 1.2em;
+      font-size: 1.1em;
       color: #fff;
       margin-top: 20px;
     }
 
     #victory {
-      font-size: 1.5em;
+      font-size: 1.4em;
       color: #00ffcc;
       margin-top: 30px;
       font-weight: bold;
@@ -83,9 +87,11 @@
     #solutionDisplay {
       display: flex;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
       margin: 30px 0;
-      font-size: 28px;
+      font-size: 26px;
+      flex-wrap: wrap;
+      padding: 0 10px;
     }
 
     .letter-box {
@@ -119,12 +125,33 @@
     #resetBtn:hover {
       background-color: #ddeeff;
     }
+
+    @media (max-width: 480px) {
+      .key {
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+      }
+
+      #solutionDisplay {
+        font-size: 22px;
+        gap: 6px;
+      }
+
+      h1 {
+        font-size: 1.5em;
+      }
+
+      .subtext, #note, #victory {
+        font-size: 1em;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <h1>🧩 Beispiel Rätsel</h1>
-  <div class="subtext">1 von 24 Rätseln</div>
+  <h1>🧙 Beispiel Rätsel</h1>
+  <div class="subtext">1 von 11 Rätseln</div>
   <p>Klicke oder tippe: Finde das Lösungswort!</p>
 
   <div id="solutionDisplay"></div>
@@ -134,7 +161,6 @@
   <div id="note">–</div>
   <div id="victory"></div>
 
-  <!-- Blasen generieren -->
   <script>
     for (let i = 0; i < 12; i++) {
       const bubble = document.createElement('div');
@@ -225,7 +251,7 @@
     }
 
     function getRandomCoordinateNumber() {
-      return Math.floor(Math.random() * 100) + 1; // z. B. 1–100
+      return Math.floor(Math.random() * 100) + 1;
     }
 
     function deleteLastLetter() {
@@ -255,7 +281,6 @@
     });
 
     document.getElementById("resetBtn").addEventListener("click", deleteLastLetter);
-
     updateSolutionDisplay();
   </script>
 
